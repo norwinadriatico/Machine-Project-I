@@ -1,0 +1,75 @@
+Imports System
+Imports System.IO
+
+Public Class Main
+
+    Private Sub txt_Folder_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles txt_Folder.Click
+        Dim filesfolder As New FolderBrowserDialog
+        Static Newroot As String
+        filesfolder.ShowDialog()
+        Newroot = filesfolder.SelectedPath & "\"
+        txt_Folder.Text = Newroot
+    End Sub
+
+    Private Sub txt_Folder_TextChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txt_Folder.TextChanged
+        Dim msgresult As Integer
+        msgresult = MsgBox("Press OK to start indexing", vbOKCancel + vbInformation, )
+        If msgresult = vbOK Then
+            MsgBox("Indexing may take several minutes, please wait...", vbInformation)
+            ProcessPath(txt_Folder.Text)
+        Else
+            MsgBox("canceled", vbCritical)
+            End
+        End If
+    End Sub
+
+    Public Sub ProcessPath(ByVal SourcePath As String)
+        Dim fileReader As String
+        Dim txtlength As Integer
+        Dim chCounter As Integer
+        Static Wrd As String
+        Dim ReadString As String
+        Static SourceDir As DirectoryInfo = New DirectoryInfo(SourcePath)
+        Dim FileWriter As StreamWriter
+
+        ' the source directory must exist, otherwise throw an exception
+        If SourceDir.Exists Then
+            Dim SubDir As DirectoryInfo
+            For Each childFile As FileInfo In SourceDir.GetFiles("*", SearchOption.AllDirectories).Where(Function(file) file.Extension.ToLower = ".txt")
+                ' start parsing
+                fileReader = My.Computer.FileSystem.ReadAllText(childFile.FullName, System.Text.Encoding.Default).ToLower
+                txtlength = Len(fileReader)
+                ' read each character from fileReader
+                For chCounter = 0 To (txtlength - 1)
+                    While ((fileReader(chCounter) <> " ") And (fileReader(chCounter) <> vbCr) And (fileReader(chCounter) <> vbLf))
+
+                        ' compare each character to the unqualified characters
+                        If ((fileReader(chCounter) = "a") Or (fileReader(chCounter) = "b") Or (fileReader(chCounter) = "c") Or (fileReader(chCounter) = "d") Or (fileReader(chCounter) = "e") Or (fileReader(chCounter) = "f") Or (fileReader(chCounter) = "g") Or (fileReader(chCounter) = "h") Or (fileReader(chCounter) = "i") Or (fileReader(chCounter) = "j") Or (fileReader(chCounter) = "k") Or (fileReader(chCounter) = "l") Or (fileReader(chCounter) = "m") Or (fileReader(chCounter) = "n") Or (fileReader(chCounter) = "o") Or (fileReader(chCounter) = "p") Or (fileReader(chCounter) = "q") Or (fileReader(chCounter) = "r") Or (fileReader(chCounter) = "s") Or (fileReader(chCounter) = "t") Or (fileReader(chCounter) = "u") Or (fileReader(chCounter) = "v") Or (fileReader(chCounter) = "w") Or (fileReader(chCounter) = "x") Or (fileReader(chCounter) = "y") Or (fileReader(chCounter) = "z")) Then
+                            Wrd = Wrd + fileReader(chCounter)
+                        End If
+                        chCounter = chCounter + 1
+                    End While
+
+                    ' qualify the valid number of characters
+                    If Len(Wrd) >= 4 Then
+                        Try
+                            'Pass the file path and name to the StreamWriter constructor.
+                            'Indicate that Append is True, so file will not be overwritten.
+                            FileWriter = New StreamWriter("C:\Users\Norwin\Desktop\MIT223\MP#1\IndexFolder\Index.txt", True)
+                            FileWriter.WriteLine(Wrd & "-" & childFile.FullName)
+                        Finally
+                            'Close the file.
+                            FileWriter.Close()
+                            Wrd = ""
+                        End Try
+                    Else
+                        Wrd = ""
+                    End If
+                Next
+            Next
+        Else
+            Throw New DirectoryNotFoundException("Source directory does not exist: " + SourceDir.FullName)
+        End If
+    End Sub
+
+End Class
